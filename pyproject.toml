@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "image-process-cli"
+version = "0.1.0"
+description = "A CLI tool for merging images"
+readme = "README.md"
+authors = [
+  {name = "Your Name", email = "your.email@example.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "Pillow",
+    "typer"
+]
+
+[project.scripts]
+image-process = "image_process.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "uv"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["image_process*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
