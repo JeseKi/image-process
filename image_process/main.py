@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-图片处理 CLI 工具
+图片处理工具
 
-该工具提供了一个命令行接口，用于合并多张图片。
+该工具提供了一个命令行接口和文本用户界面，用于合并多张图片。
 """
 
 import typer
@@ -11,7 +11,7 @@ from .merge_images import merge_images
 import os
 
 app = typer.Typer(
-    help="图片处理 CLI 工具",
+    help="图片处理工具",
     no_args_is_help=True,
     epilog="示例: image-process --files img1.jpg --files img2.jpg --output result.jpg",
 )
@@ -80,6 +80,18 @@ def merge(
     except Exception as e:
         typer.echo(f"合并图片时出错: {str(e)}", err=True)
         raise typer.Exit(code=1)
+
+
+def run_cli():
+    """运行命令行界面"""
+    app()
+
+
+def run_tui():
+    """运行文本用户界面"""
+    from .tui import run_tui as run_tui_impl
+
+    run_tui_impl()
 
 
 if __name__ == "__main__":
