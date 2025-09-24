@@ -22,7 +22,9 @@ app = typer.Typer(
 def merge(
     files: List[str] = typer.Option(..., "--files", "-f", help="要合并的图片文件列表"),
     output: str = typer.Option(..., "--output", "-o", help="输出文件路径"),
-    add_timestamp: bool = typer.Option(False, "--timestamp", help="在输出文件名中添加时间戳"),
+    add_timestamp: bool = typer.Option(
+        False, "--timestamp", help="在输出文件名中添加时间戳"
+    ),
     orientation: str = typer.Option(
         "horizontal", "--orientation", help="图片排列方向 (horizontal/vertical)"
     ),

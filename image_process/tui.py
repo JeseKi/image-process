@@ -12,6 +12,37 @@ from rich.table import Table
 from rich.panel import Panel
 from .merge_images import merge_images
 from datetime import datetime
+from textual.app import App, ComposeResult
+from textual.widgets import Header, Footer, SelectionList
+from textual.binding import Binding
+
+
+class FileSelector(App):
+    """A TUI for selecting files."""
+
+    BINDINGS = [
+        Binding("ctrl+x", "quit_and_return", "退出"),
+    ]
+
+    def compose(self) -> ComposeResult:
+        """Create child widgets for the app."""
+        yield Header(show_clock=True, name="选择图片文件")
+        image_files = [
+            f
+            for f in os.listdir(".")
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp"))
+        ]
+        yield SelectionList[str](*[(f, f) for f in image_files])
+        yield Footer()
+
+    def on_mount(self) -> None:
+        """Called when the app is mounted."""
+        self.query_one(SelectionList).focus()
+
+    def action_quit_and_return(self) -> None:
+        """Quit the app and return selected files."""
+        selected_files = self.query_one(SelectionList).selected
+        self.exit(selected_files)
 
 
 class ImageProcessorTUI:
@@ -40,7 +71,7 @@ class ImageProcessorTUI:
         运行 TUI 界面
         """
         self.console.print(Panel("[bold blue]图片处理工具[/bold blue]", expand=False))
-        self.console.print("[green]欢迎使用图片处理工具 TUI 版本！[/green]\\n")
+        self.console.print("[green]欢迎使用图片处理工具 TUI 版本！[/green]\n")
 
         while True:
             # 显示主菜单
@@ -100,16 +131,15 @@ class ImageProcessorTUI:
         """
         添加图片文件
         """
-        while True:
-            file_path = Prompt.ask("[bold]请输入图片文件路径 (回车完成添加):[/bold]")
-            if not file_path:
-                break
-
-            if os.path.exists(file_path):
-                self.files.append(file_path)
-                self.console.print(f"[green]已添加文件: {file_path}[/green]")
-            else:
-                self.console.print(f"[red]文件不存在: {file_path}[/red]")
+        selector = FileSelector()
+        selected_files = selector.run()
+        if selected_files:
+            for file_path in selected_files:
+                if os.path.exists(file_path):
+                    self.files.append(file_path)
+                    self.console.print(f"[green]已添加文件: {file_path}[/green]")
+                else:
+                    self.console.print(f"[red]文件不存在: {file_path}[/red]")
 
     def remove_file(self):
         """
@@ -119,7 +149,7 @@ class ImageProcessorTUI:
             self.console.print("[yellow]没有已添加的文件[/yellow]")
             return
 
-        self.console.print("\\n[bold]当前已添加的文件:[/bold]")
+        self.console.print("\n[bold]当前已添加的文件:[/bold]")
         for i, file in enumerate(self.files, 1):
             self.console.print(f"{i}. {file}")
 
@@ -146,7 +176,7 @@ class ImageProcessorTUI:
         """
         配置合并参数
         """
-        self.console.print("\\n[bold]配置合并参数:[/bold]")
+        self.console.print("\n[bold]配置合并参数:[/bold]")
 
         # 选择方向
         orientation_choice = Prompt.ask(
@@ -217,7 +247,9 @@ class ImageProcessorTUI:
         self.margin = IntPrompt.ask("设置边距 (像素)", default=self.margin)
 
         # 设置是否添加时间戳
-        self.add_timestamp = Confirm.ask("是否在输出文件名中添加时间戳?", default=self.add_timestamp)
+        self.add_timestamp = Confirm.ask(
+            "是否在输出文件名中添加时间戳?", default=self.add_timestamp
+        )
 
         self.console.print("[green]配置已更新[/green]")
 
@@ -252,16 +284,16 @@ class ImageProcessorTUI:
         self.console.print(table)
 
         if self.files:
-            self.console.print("\\n[bold]已添加的文件:[/bold]")
+            self.console.print("\n[bold]已添加的文件:[/bold]")
             for i, file in enumerate(self.files, 1):
                 self.console.print(f"{i}. {file}")
         else:
-            self.console.print("\\n[yellow]尚未添加任何文件[/yellow]")
+            self.console.print("\n[yellow]尚未添加任何文件[/yellow]")
 
         if self.output:
-            self.console.print(f"\\n[bold]输出路径:[/bold] {self.output}")
+            self.console.print(f"\n[bold]输出路径:[/bold] {self.output}")
         else:
-            self.console.print("\\n[yellow]未设置输出路径[/yellow]")
+            self.console.print("\n[yellow]未设置输出路径[/yellow]")
 
     def process_images(self):
         """
@@ -300,10 +332,10 @@ class ImageProcessorTUI:
             os.makedirs(output_dir, exist_ok=True)
 
         # 显示当前配置供用户确认
-        self.console.print("\\n[bold]即将执行图片合并，当前配置:[/bold]")
+        self.console.print("\n[bold]即将执行图片合并，当前配置:[/bold]")
         self.show_current_config()
 
-        if not Confirm.ask("\\n确认执行合并操作?", default=True):
+        if not Confirm.ask("\n确认执行合并操作?", default=True):
             self.console.print("[yellow]操作已取消[/yellow]")
             return
 

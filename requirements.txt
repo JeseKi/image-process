@@ -2,25 +2,44 @@
 #    uv pip compile requirements.in -o requirements.txt
 click==8.2.1
     # via typer
+linkify-it-py==2.0.3
+    # via markdown-it-py
 markdown-it-py==4.0.0
-    # via rich
+    # via
+    #   mdit-py-plugins
+    #   rich
+    #   textual
+mdit-py-plugins==0.5.0
+    # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
 pillow==11.3.0
     # via -r requirements.in
+platformdirs==4.4.0
+    # via textual
 pygments==2.19.2
-    # via rich
+    # via
+    #   rich
+    #   textual
 rich==14.1.0
-    # via typer
+    # via
+    #   textual
+    #   typer
 ruff==0.12.12
     # via -r requirements.in
 shellingham==1.5.4
     # via typer
+textual==6.1.0
+    # via -r requirements.in
 ty==0.0.1a20
     # via -r requirements.in
 typer==0.17.4
     # via -r requirements.in
 typing-extensions==4.15.0
-    # via typer
+    # via
+    #   textual
+    #   typer
+uc-micro-py==1.0.3
+    # via linkify-it-py
 uv==0.8.15
     # via -r requirements.in

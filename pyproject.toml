@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "image-process"
-version = "0.1.2"
+version = "0.1.3"
 description = "A tool for merging images with CLI and TUI support"
 readme = "README.md"
 authors = [
@@ -21,7 +21,8 @@ classifiers = [
 ]
 dependencies = [
     "Pillow",
-    "typer"
+    "typer",
+    "textual"
 ]
 
 [project.scripts]
