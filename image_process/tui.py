@@ -6,6 +6,7 @@
 """
 
 import os
+import json
 from rich.console import Console
 from rich.prompt import Prompt, Confirm, IntPrompt
 from rich.table import Table
@@ -15,6 +16,10 @@ from datetime import datetime
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, SelectionList
 from textual.binding import Binding
+
+
+CONFIG_DIR = os.path.expanduser("~/.config/image-process-cli")
+CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
 
 class FileSelector(App):
@@ -65,6 +70,58 @@ class ImageProcessorTUI:
         self.uniform_height = None
         self.uniform_width = None
         self.margin = 0
+        self.load_config()
+
+    def load_config(self):
+        """
+        加载配置
+        """
+        try:
+            if os.path.exists(CONFIG_FILE):
+                with open(CONFIG_FILE, "r") as f:
+                    config = json.load(f)
+                    self.output = config.get("output", self.output)
+                    self.add_timestamp = config.get("add_timestamp", self.add_timestamp)
+                    self.orientation = config.get("orientation", self.orientation)
+                    self.gap = config.get("gap", self.gap)
+                    self.divider = config.get("divider", self.divider)
+                    self.divider_thickness = config.get(
+                        "divider_thickness", self.divider_thickness
+                    )
+                    self.divider_color = tuple(
+                        config.get("divider_color", self.divider_color)
+                    )
+                    self.bg_color = tuple(config.get("bg_color", self.bg_color))
+                    self.align = config.get("align", self.align)
+                    self.uniform_height = config.get(
+                        "uniform_height", self.uniform_height
+                    )
+                    self.uniform_width = config.get("uniform_width", self.uniform_width)
+                    self.margin = config.get("margin", self.margin)
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass  # 如果文件不存在或解析失败，则使用默认配置
+
+    def save_config(self):
+        """
+        保存配置
+        """
+        config = {
+            "output": self.output,
+            "add_timestamp": self.add_timestamp,
+            "orientation": self.orientation,
+            "gap": self.gap,
+            "divider": self.divider,
+            "divider_thickness": self.divider_thickness,
+            "divider_color": self.divider_color,
+            "bg_color": self.bg_color,
+            "align": self.align,
+            "uniform_height": self.uniform_height,
+            "uniform_width": self.uniform_width,
+            "margin": self.margin,
+        }
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(config, f, indent=4)
 
     def run(self):
         """
@@ -171,6 +228,7 @@ class ImageProcessorTUI:
         """
         self.output = Prompt.ask("[bold]请输入输出文件路径:[/bold]")
         self.console.print(f"[green]输出路径已设置为: {self.output}[/green]")
+        self.save_config()
 
     def configure_settings(self):
         """
@@ -252,6 +310,7 @@ class ImageProcessorTUI:
         )
 
         self.console.print("[green]配置已更新[/green]")
+        self.save_config()
 
     def show_current_config(self):
         """
@@ -375,6 +434,7 @@ class ImageProcessorTUI:
             self.__init__()
             self.files = files_backup
             self.console.print("[green]配置已重置为默认值[/green]")
+            self.save_config()
         else:
             self.console.print("[yellow]操作已取消[/yellow]")
 
