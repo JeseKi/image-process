@@ -13,7 +13,6 @@ from datetime import datetime
 
 app = typer.Typer(
     help="图片处理工具",
-    no_args_is_help=True,
     epilog="示例: image-process --files img1.jpg --files img2.jpg --output result.jpg",
 )
 

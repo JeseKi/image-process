@@ -129,3 +129,6 @@ Thumbs.db
 
 # Conda
 conda-meta/
+
+# tmp
+tmp*

@@ -18,6 +18,24 @@ pip install .
 
 ## 使用方法
 
+### 查看帮助
+
+```bash
+image-process --help
+```
+
+### 设置默认运行模式
+
+您可以设置默认运行模式（CLI 或 TUI）：
+
+```bash
+# 设置默认为 CLI 模式
+image-process --config-mode cli
+
+# 设置默认为 TUI 模式
+image-process --config-mode tui
+```
+
 ### 合并图片
 
 ```bash
