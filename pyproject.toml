@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "image-process"
-version = "0.1.1"
+version = "0.1.2"
 description = "A tool for merging images with CLI and TUI support"
 readme = "README.md"
 authors = [
-  {name = "Your Name", email = "your.email@example.com"}
+  {name = "Jese Ki", email = "2094901072@qq.com"}
 ]
 license = {text = "MIT"}
 classifiers = [

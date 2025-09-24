@@ -11,6 +11,7 @@ from rich.prompt import Prompt, Confirm, IntPrompt
 from rich.table import Table
 from rich.panel import Panel
 from .merge_images import merge_images
+from datetime import datetime
 
 
 class ImageProcessorTUI:
@@ -22,6 +23,7 @@ class ImageProcessorTUI:
         self.console = Console()
         self.files = []
         self.output = ""
+        self.add_timestamp = False
         self.orientation = "horizontal"
         self.gap = 40
         self.divider = True
@@ -214,6 +216,9 @@ class ImageProcessorTUI:
         # 设置边距
         self.margin = IntPrompt.ask("设置边距 (像素)", default=self.margin)
 
+        # 设置是否添加时间戳
+        self.add_timestamp = Confirm.ask("是否在输出文件名中添加时间戳?", default=self.add_timestamp)
+
         self.console.print("[green]配置已更新[/green]")
 
     def show_current_config(self):
@@ -242,6 +247,7 @@ class ImageProcessorTUI:
         elif self.orientation == "vertical" and self.uniform_width is not None:
             table.add_row("统一宽度", str(self.uniform_width))
         table.add_row("边距", str(self.margin))
+        table.add_row("添加时间戳", "是" if self.add_timestamp else "否")
 
         self.console.print(table)
 
@@ -281,6 +287,13 @@ class ImageProcessorTUI:
                 self.console.print(f"  - {file}")
             return
 
+        # 添加时间戳到输出文件名
+        original_output = self.output
+        if self.add_timestamp:
+            name, ext = os.path.splitext(self.output)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.output = f"{name}_{timestamp}{ext}"
+
         # 确保输出目录存在
         output_dir = os.path.dirname(self.output)
         if output_dir:
@@ -316,6 +329,9 @@ class ImageProcessorTUI:
             self.console.print(f"[green]图片合并完成: {result}[/green]")
         except Exception as e:
             self.console.print(f"[red]合并图片时出错: {str(e)}[/red]")
+        finally:
+            # 恢复原始输出路径
+            self.output = original_output
 
     def reset_config(self):
         """

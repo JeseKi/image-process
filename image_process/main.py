@@ -9,6 +9,7 @@ import typer
 from typing import List, Tuple, Optional
 from .merge_images import merge_images
 import os
+from datetime import datetime
 
 app = typer.Typer(
     help="图片处理工具",
@@ -21,6 +22,7 @@ app = typer.Typer(
 def merge(
     files: List[str] = typer.Option(..., "--files", "-f", help="要合并的图片文件列表"),
     output: str = typer.Option(..., "--output", "-o", help="输出文件路径"),
+    add_timestamp: bool = typer.Option(False, "--timestamp", help="在输出文件名中添加时间戳"),
     orientation: str = typer.Option(
         "horizontal", "--orientation", help="图片排列方向 (horizontal/vertical)"
     ),
@@ -54,6 +56,12 @@ def merge(
         if not os.path.exists(file):
             typer.echo(f"错误: 文件 '{file}' 不存在", err=True)
             raise typer.Exit(code=1)
+
+    # 添加时间戳到输出文件名
+    if add_timestamp:
+        name, ext = os.path.splitext(output)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output = f"{name}_{timestamp}{ext}"
 
     # 确保输出目录存在
     output_dir = os.path.dirname(output)
