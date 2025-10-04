@@ -195,6 +195,12 @@ class ImageProcessorTUI:
                 margin=self.config.margin,
             )
             self.console.print(f"[green]图片合并完成: {result}[/green]")
+
+            # 合成完成后自动清空已选择的图片列表
+            self.console.print("[green]正在自动清空已选择的图片列表...[/green]")
+            self.files.clear()
+            self.console.print("[green]图片列表已清空[/green]")
+
         except Exception as e:
             self.console.print(f"[red]合并图片时出错: {str(e)}[/red]")
         finally:
