@@ -25,6 +25,8 @@ class FileSelector(App):
             for f in os.listdir(".")
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp"))
         ]
+        # 按修改时间排序（最新的在前）
+        image_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         yield SelectionList[str](*[(f, f) for f in image_files])
         yield Footer()
 
