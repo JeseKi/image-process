@@ -24,11 +24,11 @@ class SettingsConfigurer:
 
         # 选择方向
         orientation_choice = Prompt.ask(
-            "选择排列方向",
-            choices=["horizontal", "vertical"],
-            default=config.orientation,
+            "选择排列方向 (1: 水平排列, 2: 垂直排列)",
+            default="1" if config.orientation == "horizontal" else "2",
+            choices=["1", "2"],
         )
-        config.orientation = orientation_choice
+        config.orientation = "horizontal" if orientation_choice == "1" else "vertical"
 
         # 设置间距
         config.gap = IntPrompt.ask("设置图片间距 (像素)", default=config.gap)
