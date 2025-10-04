@@ -193,6 +193,8 @@ class ImageProcessorTUI:
                 if self.config.orientation == "vertical"
                 else None,
                 margin=self.config.margin,
+                cols=self.config.cols,
+                rows=self.config.rows,
             )
             self.console.print(f"[green]图片合并完成: {result}[/green]")
 

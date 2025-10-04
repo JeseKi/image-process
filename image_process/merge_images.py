@@ -16,12 +16,61 @@ def merge_images(
     uniform_height: Optional[int] = None,
     uniform_width: Optional[int] = None,
     margin: int = 0,
+    cols: Optional[int] = None,
+    rows: Optional[int] = None,
 ) -> str:
     assert orientation in ("horizontal", "vertical")
     assert gap >= 0 and divider_thickness >= 0 and margin >= 0
 
     images = [Image.open(f).convert("RGBA") for f in files]
 
+    # 如果指定了网格布局参数，则使用网格布局
+    if cols is not None or rows is not None:
+        return _merge_images_grid(
+            images=images,
+            output=output,
+            gap=gap,
+            divider=divider,
+            divider_thickness=divider_thickness,
+            divider_color=divider_color,
+            bg_color=bg_color,
+            align=align,
+            margin=margin,
+            cols=cols,
+            rows=rows,
+        )
+    else:
+        # 使用原有的线性布局
+        return _merge_images_linear(
+            images=images,
+            output=output,
+            orientation=orientation,
+            gap=gap,
+            divider=divider,
+            divider_thickness=divider_thickness,
+            divider_color=divider_color,
+            bg_color=bg_color,
+            align=align,
+            uniform_height=uniform_height,
+            uniform_width=uniform_width,
+            margin=margin,
+        )
+
+
+def _merge_images_linear(
+    images: List[Image.Image],
+    output: str,
+    orientation: str,
+    gap: int,
+    divider: bool,
+    divider_thickness: int,
+    divider_color: Tuple[int, int, int],
+    bg_color: Tuple[int, int, int],
+    align: str,
+    uniform_height: Optional[int],
+    uniform_width: Optional[int],
+    margin: int,
+) -> str:
     if orientation == "horizontal" and uniform_height is not None:
         new_imgs = []
         for im in images:
@@ -106,6 +155,133 @@ def merge_images(
                     cursor_y += divider_thickness
                 half_gap_bottom = gap - half_gap_top
                 cursor_y += half_gap_bottom
+
+    output_dir = os.path.dirname(output)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    canvas.convert("RGB").save(output)
+    return output
+
+
+def _merge_images_grid(
+    images: List[Image.Image],
+    output: str,
+    gap: int,
+    divider: bool,
+    divider_thickness: int,
+    divider_color: Tuple[int, int, int],
+    bg_color: Tuple[int, int, int],
+    align: str,
+    margin: int,
+    cols: Optional[int],
+    rows: Optional[int],
+) -> str:
+    n = len(images)
+
+    # 计算网格布局的行列数
+    if cols is not None and rows is not None:
+        # 如果同时指定行数和列数，直接使用
+        grid_cols = cols
+        grid_rows = rows
+    elif cols is not None:
+        # 如果只指定列数，计算所需行数
+        grid_cols = cols
+        grid_rows = (n + grid_cols - 1) // grid_cols  # 向上取整
+    elif rows is not None:
+        # 如果只指定行数，计算所需列数
+        grid_rows = rows
+        grid_cols = (n + grid_rows - 1) // grid_rows  # 向上取整
+    else:
+        # 这种情况不应该发生，但为了安全起见
+        grid_cols = int(n**0.5)  # 简单的平方根布局
+        grid_rows = (n + grid_cols - 1) // grid_cols
+
+    # 确保网格大小能容纳所有图像
+    if grid_cols * grid_rows < n:
+        if cols is not None:  # 如果固定了列数
+            grid_rows = (n + grid_cols - 1) // grid_cols
+        elif rows is not None:  # 如果固定了行数
+            grid_cols = (n + grid_rows - 1) // grid_rows
+        else:  # 都没固定则调整
+            grid_cols = int(n**0.5)
+            grid_rows = (n + grid_cols - 1) // grid_cols
+
+    # 统一调整图像大小
+    # 找到网格中每个位置对应的实际图片，计算目标尺寸
+    max_width = 0
+    max_height = 0
+
+    for img in images:
+        max_width = max(max_width, img.width)
+        max_height = max(max_height, img.height)
+
+    # 缩放所有图片到统一尺寸
+    resized_images = []
+    for img in images:
+        resized_img = img.resize((max_width, max_height), Image.Resampling.LANCZOS)
+        resized_images.append(resized_img)
+
+    # 计算画布尺寸
+    total_gap_cols = max(grid_cols - 1, 0)
+    total_gap_rows = max(grid_rows - 1, 0)
+    total_divider_cols = total_gap_cols * (
+        divider_thickness if divider and divider_thickness > 0 else 0
+    )
+    total_divider_rows = total_gap_rows * (
+        divider_thickness if divider and divider_thickness > 0 else 0
+    )
+
+    canvas_w = (
+        grid_cols * max_width + total_gap_cols * gap + total_divider_cols + 2 * margin
+    )
+    canvas_h = (
+        grid_rows * max_height + total_gap_rows * gap + total_divider_rows + 2 * margin
+    )
+
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), bg_color + (255,))
+    draw = ImageDraw.Draw(canvas)
+
+    # 放置图像到网格中
+    for idx, img in enumerate(resized_images):
+        # 计算网格中的行和列
+        row = idx // grid_cols
+        col = idx % grid_cols
+
+        # 计算在画布上的位置
+        x = margin + col * (
+            max_width
+            + gap
+            + (divider_thickness if divider and divider_thickness > 0 else 0)
+        )
+        y = margin + row * (
+            max_height
+            + gap
+            + (divider_thickness if divider and divider_thickness > 0 else 0)
+        )
+
+        # 如果启用了divider，需要考虑divider的偏移
+        if divider and divider_thickness > 0:
+            x += col * divider_thickness
+            y += row * divider_thickness
+
+        # 绘制divider（如果是非最后一列或最后一行）
+        if divider and divider_thickness > 0 and col < grid_cols - 1:
+            # 垂直divider
+            x0 = x + max_width
+            x1 = x0 + divider_thickness - 1
+            y0 = y
+            y1 = y + max_height - 1
+            draw.rectangle([x0, y0, x1, y1], fill=divider_color)
+
+        if divider and divider_thickness > 0 and row < grid_rows - 1:
+            # 水平divider
+            x0 = x
+            x1 = x + max_width - 1
+            y0 = y + max_height
+            y1 = y0 + divider_thickness - 1
+            draw.rectangle([x0, y0, x1, y1], fill=divider_color)
+
+        canvas.paste(img, (x, y), img)
 
     output_dir = os.path.dirname(output)
     if output_dir:

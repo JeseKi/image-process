@@ -96,6 +96,39 @@ class SettingsConfigurer:
         # 设置边距
         config.margin = IntPrompt.ask("设置边距 (像素)", default=config.margin)
 
+        # 询问是否使用网格布局
+        use_grid_layout = Confirm.ask(
+            "是否使用网格布局? (指定行数或列数)",
+            default=(config.cols is not None or config.rows is not None),
+        )
+
+        if use_grid_layout:
+            # 设置列数
+            cols_input = Prompt.ask(
+                "设置列数 (输入数值或直接回车跳过)",
+                default="" if config.cols is None else str(config.cols),
+            )
+            if cols_input:
+                try:
+                    config.cols = int(cols_input)
+                except ValueError:
+                    self.console.print("[red]列数格式错误，跳过设置[/red]")
+
+            # 设置行数
+            rows_input = Prompt.ask(
+                "设置行数 (输入数值或直接回车跳过)",
+                default="" if config.rows is None else str(config.rows),
+            )
+            if rows_input:
+                try:
+                    config.rows = int(rows_input)
+                except ValueError:
+                    self.console.print("[red]行数格式错误，跳过设置[/red]")
+        else:
+            # 如果不使用网格布局，则清空行/列设置
+            config.cols = None
+            config.rows = None
+
         # 设置是否添加时间戳
         config.add_timestamp = Confirm.ask(
             "是否在输出文件名中添加时间戳?", default=config.add_timestamp

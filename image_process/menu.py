@@ -77,6 +77,13 @@ class MenuManager:
             table.add_row("统一高度", str(config.uniform_height))
         elif config.orientation == "vertical" and config.uniform_width is not None:
             table.add_row("统一宽度", str(config.uniform_width))
+
+        # 添加网格布局信息
+        if config.cols is not None:
+            table.add_row("网格列数", str(config.cols))
+        if config.rows is not None:
+            table.add_row("网格行数", str(config.rows))
+
         table.add_row("边距", str(config.margin))
         table.add_row("添加时间戳", "是" if config.add_timestamp else "否")
 

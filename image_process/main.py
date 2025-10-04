@@ -48,6 +48,8 @@ def merge(
         None, "--uniform-width", help="统一宽度 (仅在垂直排列时有效)"
     ),
     margin: int = typer.Option(0, "--margin", help="边距 (像素)"),
+    cols: Optional[int] = typer.Option(None, "--cols", help="指定列数 (启用网格布局)"),
+    rows: Optional[int] = typer.Option(None, "--rows", help="指定行数 (启用网格布局)"),
 ):
     """
     合并多张图片
@@ -84,6 +86,8 @@ def merge(
             uniform_height=uniform_height if orientation == "horizontal" else None,
             uniform_width=uniform_width if orientation == "vertical" else None,
             margin=margin,
+            cols=cols,
+            rows=rows,
         )
         typer.echo(f"图片合并完成: {result}")
     except Exception as e:

@@ -32,6 +32,8 @@ class ConfigManager:
         self.uniform_height: Optional[int] = None
         self.uniform_width: Optional[int] = None
         self.margin: int = 0
+        self.cols: Optional[int] = None
+        self.rows: Optional[int] = None
 
         if load_saved_config:
             self.load_config()
@@ -64,6 +66,8 @@ class ConfigManager:
                     )
                     self.uniform_width = config.get("uniform_width", self.uniform_width)
                     self.margin = config.get("margin", self.margin)
+                    self.cols = config.get("cols", self.cols)
+                    self.rows = config.get("rows", self.rows)
         except (FileNotFoundError, json.JSONDecodeError):
             pass  # 如果文件不存在或解析失败，则使用默认配置
 
@@ -96,6 +100,8 @@ class ConfigManager:
                 "uniform_height": self.uniform_height,
                 "uniform_width": self.uniform_width,
                 "margin": self.margin,
+                "cols": self.cols,
+                "rows": self.rows,
             }
         )
 
