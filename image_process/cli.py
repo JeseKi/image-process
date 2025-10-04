@@ -32,9 +32,15 @@ def save_config(config):
     """
     保存配置文件
     """
+    # 读取现有配置以保留图像处理相关设置
+    existing_config = load_config()
+
+    # 将CLI特定配置合并到现有配置中
+    existing_config.update(config)
+
     os.makedirs(CONFIG_DIR, exist_ok=True)
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
+        json.dump(existing_config, f, indent=4, ensure_ascii=False)
 
 
 app = typer.Typer(help="图片处理工具 - 支持 CLI 和 TUI 模式")

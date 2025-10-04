@@ -19,7 +19,7 @@ class ConfigManager:
     配置管理类
     """
 
-    def __init__(self):
+    def __init__(self, load_saved_config=True):
         self.output: str = ""
         self.add_timestamp: bool = False
         self.orientation: str = "horizontal"
@@ -33,7 +33,8 @@ class ConfigManager:
         self.uniform_width: Optional[int] = None
         self.margin: int = 0
 
-        self.load_config()
+        if load_saved_config:
+            self.load_config()
 
     def load_config(self):
         """
@@ -70,35 +71,49 @@ class ConfigManager:
         """
         保存配置到文件
         """
-        config = {
-            "output": self.output,
-            "add_timestamp": self.add_timestamp,
-            "orientation": self.orientation,
-            "gap": self.gap,
-            "divider": self.divider,
-            "divider_thickness": self.divider_thickness,
-            "divider_color": self.divider_color,
-            "bg_color": self.bg_color,
-            "align": self.align,
-            "uniform_height": self.uniform_height,
-            "uniform_width": self.uniform_width,
-            "margin": self.margin,
-        }
+        # 读取现有配置以保留CLI相关设置
+        try:
+            if CONFIG_FILE.exists():
+                with open(CONFIG_FILE, "r") as f:
+                    existing_config = json.load(f)
+            else:
+                existing_config = {}
+        except (FileNotFoundError, json.JSONDecodeError):
+            existing_config = {}
+
+        # 更新图像处理相关配置
+        existing_config.update(
+            {
+                "output": self.output,
+                "add_timestamp": self.add_timestamp,
+                "orientation": self.orientation,
+                "gap": self.gap,
+                "divider": self.divider,
+                "divider_thickness": self.divider_thickness,
+                "divider_color": self.divider_color,
+                "bg_color": self.bg_color,
+                "align": self.align,
+                "uniform_height": self.uniform_height,
+                "uniform_width": self.uniform_width,
+                "margin": self.margin,
+            }
+        )
+
         os.makedirs(CONFIG_DIR, exist_ok=True)
         with open(CONFIG_FILE, "w") as f:
-            json.dump(config, f, indent=4)
+            json.dump(existing_config, f, indent=4)
 
     def reset_to_defaults(self):
         """
         重置配置为默认值
         """
-        # 保存当前的输出和时间戳设置
+        # 保存当前的输出和时间戳设置（这些是用户可能在命令行或界面中指定的）
         saved_output = self.output
         saved_add_timestamp = self.add_timestamp
 
-        # 重置为默认值
-        self.__init__()
+        # 重置为默认值（不加载已保存的配置）
+        self.__init__(load_saved_config=False)
 
-        # 恢复之前的输出和时间戳设置
+        # 只恢复之前的输出和时间戳设置，其他都使用默认值
         self.output = saved_output
         self.add_timestamp = saved_add_timestamp
